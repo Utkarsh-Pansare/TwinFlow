@@ -1,0 +1,183 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================================
+// ENUMS
+// ============================================================================
+
+enum ShipmentStatus {
+  EARLY
+  ON_TIME
+  LATE
+  UNKNOWN
+}
+
+enum TransportMode {
+  OCEAN
+  TRUCKLOAD
+  AIR
+}
+
+enum AlertSeverity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum MilestoneType {
+  DEPART_ORIGIN
+  ARRIVE_TS
+  DEPART_TS
+  ARRIVE_DESTINATION
+}
+
+enum DemurragePeriod {
+  FREE
+  FIRST
+  SECOND
+  THIRD
+}
+
+// ============================================================================
+// SHIPMENT TRACKING
+// ============================================================================
+
+model Shipment {
+  id              String   @id @default(uuid())
+  referenceNo     String   @unique
+  origin          String   @db.VarChar(100)
+  destination     String   @db.VarChar(100)
+  originLat       Float?
+  originLng       Float?
+  destLat         Float?
+  destLng         Float?
+  status          ShipmentStatus @default(UNKNOWN)
+  mode            TransportMode
+  carrier         String?
+  eta             DateTime
+  actualArrival   DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  milestones      Milestone[]
+  demurrage       Demurrage[]
+  alerts          Alert[]
+  snapshots       ShipmentSnapshot[]
+
+  @@index([status])
+  @@index([mode])
+  @@index([createdAt])
+  @@index([origin])
+  @@index([destination])
+}
+
+// ============================================================================
+// MILESTONES
+// ============================================================================
+
+model Milestone {
+  id          String   @id @default(uuid())
+  shipmentId  String
+  type        MilestoneType
+  completed   Boolean  @default(false)
+  timestamp   DateTime?
+  createdAt   DateTime @default(now())
+
+  // Relations
+  shipment    Shipment @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
+
+  @@index([shipmentId])
+  @@index([type])
+  @@index([completed])
+}
+
+// ============================================================================
+// DEMURRAGE & CHARGES
+// ============================================================================
+
+model Demurrage {
+  id            String   @id @default(uuid())
+  shipmentId    String
+  period        DemurragePeriod
+  containerCount Int
+  costPerDay    Float
+  totalDays     Int
+  totalCost     Float
+  startDate     DateTime
+  endDate       DateTime
+  createdAt     DateTime @default(now())
+
+  // Relations
+  shipment      Shipment @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
+
+  @@index([shipmentId])
+  @@index([period])
+}
+
+// ============================================================================
+// ALERTS & DISRUPTIONS
+// ============================================================================
+
+model Alert {
+  id          String   @id @default(uuid())
+  shipmentId  String?
+  title       String   @db.VarChar(255)
+  description String   @db.Text
+  severity    AlertSeverity @default(MEDIUM)
+  isResolved  Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  resolvedAt  DateTime?
+
+  // Relations
+  shipment    Shipment? @relation(fields: [shipmentId], references: [id], onDelete: SetNull)
+
+  @@index([severity])
+  @@index([isResolved])
+  @@index([createdAt])
+  @@index([shipmentId])
+}
+
+// ============================================================================
+// SNAPSHOTS FOR ANALYTICS
+// ============================================================================
+
+model ShipmentSnapshot {
+  id              String   @id @default(uuid())
+  shipmentId      String
+  status          ShipmentStatus
+  eta             DateTime
+  actualArrival   DateTime?
+  milestonesComplete Int
+  demurrageCost   Float    @default(0)
+  snapshotDate    DateTime @default(now())
+
+  // Relations
+  shipment        Shipment @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
+
+  @@index([shipmentId])
+  @@index([snapshotDate])
+}
+
+// ============================================================================
+// CACHE KEYS (for Redis tracking)
+// ============================================================================
+
+model CacheKey {
+  id        String   @id @default(uuid())
+  key       String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([expiresAt])
+}

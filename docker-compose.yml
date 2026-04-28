@@ -1,0 +1,84 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:6.0
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - twinflow
+
+  redis:
+    image: redis:7.0-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - twinflow
+
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: twinflow
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: twinflow_ai
+    ports:
+      - "5432:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    networks:
+      - twinflow
+
+  ai-service:
+    build: ./ai-service
+    ports:
+      - "8000:8000"
+    environment:
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - MAPS_API_KEY=${MAPS_API_KEY}
+      - BACKEND_API_URL=http://backend:3001
+      - DATABASE_URL=postgresql://twinflow:password@postgres:5432/twinflow_ai
+    networks:
+      - twinflow
+    depends_on:
+      - backend
+      - postgres
+
+  backend:
+    build: ./backend
+    ports:
+      - "3001:3001"
+    environment:
+      - AI_SERVICE_URL=http://ai-service:8000
+      - MONGO_URI=mongodb://mongodb:27017/twinflow
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      - mongodb
+      - redis
+    networks:
+      - twinflow
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        - VITE_API_URL=http://localhost:3001
+        - VITE_MAPBOX_TOKEN=${VITE_MAPBOX_TOKEN}
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - twinflow
+
+networks:
+  twinflow:
+    driver: bridge
+
+volumes:
+  mongo_data:
+  redis_data:
+  pg_data:

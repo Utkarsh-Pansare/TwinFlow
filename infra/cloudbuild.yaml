@@ -1,0 +1,17 @@
+steps:
+  # Build AI Service
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '-t', 'gcr.io/$PROJECT_ID/twinflow-ai', './ai-service']
+  
+  # Build API
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '-t', 'gcr.io/$PROJECT_ID/twinflow-api', './api']
+
+  # Build Frontend
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '-t', 'gcr.io/$PROJECT_ID/twinflow-frontend', './frontend']
+
+images:
+  - 'gcr.io/$PROJECT_ID/twinflow-ai'
+  - 'gcr.io/$PROJECT_ID/twinflow-api'
+  - 'gcr.io/$PROJECT_ID/twinflow-frontend'
