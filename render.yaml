@@ -72,3 +72,5 @@ services:
           envVarKey: RENDER_EXTERNAL_URL
       - key: VITE_TOMTOM_API_KEY
         value: YnDg1pDhwc7VQm5TLY3ufprGTWthhrNT
+      - key: VITE_GOOGLE_MAPS_API_KEY
+        value: AIzaSyDHnhjgH7ALYOM36o3f1eC-18P0SxiYu7w
