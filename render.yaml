@@ -10,9 +10,9 @@ services:
     plan: free
     envVars:
       - key: GEMINI_API_KEY
-        value: AIzaSyDnWmLKhtyTBvq816oAtHYBHMdGShvWMLA
+        sync: false
       - key: MAPS_API_KEY
-        value: YnDg1pDhwc7VQm5TLY3ufprGTWthhrNT
+        sync: false
       - key: BACKEND_API_URL
         fromService:
           name: twinflow-backend
@@ -34,7 +34,7 @@ services:
       - key: PORT
         value: "3000"
       - key: DATABASE_URL
-        value: "postgresql://neondb_owner:npg_g49QkVvLuAlW@ep-divine-paper-aneckh3d.c-6.us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require"
+        sync: false
       - key: REDIS_URL
         value: "redis://localhost:6379"
       - key: AI_SERVICE_URL
@@ -43,9 +43,9 @@ services:
           type: web
           property: hostport
       - key: GEMINI_API_KEY
-        value: AIzaSyDnWmLKhtyTBvq816oAtHYBHMdGShvWMLA
+        sync: false
       - key: MAPS_API_KEY
-        value: YnDg1pDhwc7VQm5TLY3ufprGTWthhrNT
+        sync: false
       - key: CORS_ORIGIN
         value: "*"
       - key: API_PREFIX
@@ -71,5 +71,4 @@ services:
           type: web
           envVarKey: RENDER_EXTERNAL_URL
       - key: VITE_TOMTOM_API_KEY
-        value: YnDg1pDhwc7VQm5TLY3ufprGTWthhrNT
-
+        sync: false
