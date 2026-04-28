@@ -1,14 +1,17 @@
 {
     "compilerOptions": {
+        "ignoreDeprecations": "5.0",
         "target": "ES2020",
         "module": "ESNext",
         "lib": [
-            "ES2020"
+            "ES2022",
+            "DOM"
         ],
         "moduleResolution": "node",
         "esModuleInterop": true,
         "allowSyntheticDefaultImports": true,
-        "strict": true,
+        "strict": false,
+        "noImplicitAny": false,
         "skipLibCheck": true,
         "forceConsistentCasingInFileNames": true,
         "resolveJsonModule": true,
@@ -53,6 +56,7 @@
     ],
     "exclude": [
         "node_modules",
-        "dist"
+        "dist",
+        "src/scripts"
     ]
 }

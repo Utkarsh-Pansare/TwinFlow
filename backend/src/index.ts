@@ -71,9 +71,14 @@ const startServer = async () => {
         await prisma.$queryRaw`SELECT 1`;
         console.log('✓ Database connected');
 
-        // Test Redis connection
-        await redis.ping();
-        console.log('✓ Redis connected');
+        // Test Redis connection (non-fatal)
+        try {
+            await redis.connect();
+            await redis.ping();
+            console.log('✓ Redis connected');
+        } catch (redisErr) {
+            console.warn('⚠ Redis unavailable — running without cache');
+        }
 
         app.listen(PORT, () => {
             console.log(`
